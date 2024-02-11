@@ -23,7 +23,6 @@ def load_data():
     data['label'] = None
     return data
 
-
 def save_labeled_data(labeled_data):  
     labeled_data = labeled_data.fillna(0)
     labeled_data.rename(columns={"link": "key"}, inplace=True)
@@ -31,7 +30,8 @@ def save_labeled_data(labeled_data):
 
 def fetch_data():
     db_labeled = labeled_data_db.fetch().items
-    return db_labeled
+    labeled_data = [{'key': item['key'], 'label': item['label']} for item in db_labeled]
+    return labeled_data
 
 def titles():
     st.title('Pangan Olahan Ilegal Labeling Tool')
@@ -67,6 +67,12 @@ def labeling_tool():
             st.write(f"<h1 style='font-size: 24px;'>{index + 1}. {row['title']}</h1>", unsafe_allow_html=True)
             st.caption(f"Rp{row['price']} - " f"{row['location']} - " f"{row['sold']}")
             st.markdown(f"👁 Lihat lebih detail pada situs [Shopee]({row['link']}).")
+            
+            if row['link'] in [item['key'] for item in df_labeled]:
+                labeled_item = next((item for item in df_labeled if item['key'] == row['link']), None)
+                label_text = "Ilegal" if labeled_item['label'] == 1 else "Legal"
+                st.caption(f"Produk ini sudah Anda labeli sebelumnya: **{label_text}**. Ganti dan simpan kembali untuk memperbarui.")
+            
             label = st.radio("Pilih label yang sesuai:", options=["Legal", "Ilegal"], key=index)
             
             if label == "Legal":
